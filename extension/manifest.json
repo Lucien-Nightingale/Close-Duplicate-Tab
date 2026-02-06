@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Close Duplicate Tabs",
+  "version": "4.2.2",
+  "description": "Close duplicate tabs with prioritized rules: pinned/group constraints > whitelist > blacklist. Supports URL-fragment or regex patterns, focused-window protection, suspended-tab URL extraction + tie-breaker, optional auto-close, customizable badge colors, and badge text (duplicate count / tab count).",
+  "icons": {
+    "16": "icon_16.png",
+    "48": "icon_48.png",
+    "128": "icon_128.png"
+  },
+  "action": {
+    "default_title": "Close Duplicate Tabs",
+    "default_icon": {
+      "16": "icon_16.png",
+      "48": "icon_48.png",
+      "128": "icon_128.png"
+    }
+  },
+  "background": {
+    "service_worker": "close_tabs.js"
+  },
+  "permissions": [
+    "tabs",
+    "storage"
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}

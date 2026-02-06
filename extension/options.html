@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Close Duplicate Tabs: Settings 4.2.2</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", sans-serif;
+      margin: 0;
+      background: #ffffff;
+      color: #111;
+    }
+    .wrap {
+      max-width: 920px;
+      margin: 24px auto;
+      padding: 0 14px;
+    }
+    h1 {
+      text-align: center;
+      margin: 22px 0 10px;
+      font-size: 30px;
+      font-weight: 700;
+    }
+    h2 {
+      margin: 22px 0 8px;
+      font-size: 20px;
+    }
+    hr {
+      border: 0;
+      border-top: 1px solid #ddd;
+      margin: 8px 0 14px;
+    }
+    .card {
+      padding: 12px 14px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #fafafa;
+      margin: 12px 0 18px;
+    }
+    .row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .hint {
+      opacity: .85;
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+    .subhead {
+      margin: 14px 0 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    input[type="text"], input[type="number"] {
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+      background: #fff;
+    }
+    input[type="text"] { width: 360px; max-width: 100%; }
+    input[type="number"] { width: 120px; }
+
+    textarea {
+      width: 100%;
+      height: 140px;
+      box-sizing: border-box;
+      resize: vertical;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      background: #fff;
+    }
+    button {
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      background: #fff;
+      cursor: pointer;
+    }
+    button:hover { background: #f4f4f4; }
+    #status {
+      color: #06c;
+      margin-left: 10px;
+    }
+    code {
+      padding: 1px 6px;
+      border-radius: 6px;
+      background: rgba(127,127,127,.18);
+    }
+    .small { font-size: 13px; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Close Duplicate Tabs 4.2.2 : Settings</h1>
+
+    <h2>Basics</h2>
+    <hr />
+
+    <div class="card">
+      <div class="row">
+        <strong>Duplicate scope:</strong>
+        <label><input type="radio" name="windowScope" value="current" checked> Current window only</label>
+        <label><input type="radio" name="windowScope" value="all"> All windows</label>
+      </div>
+      <div class="hint">This affects both the badge count and the actual closing action.</div>
+    </div>
+
+    <div class="card">
+      <label>
+        <input type="checkbox" id="protectPinnedTabs">
+        Never close pinned tabs
+      </label>
+      <div class="hint small">
+        When enabled, pinned tabs will never be closed by the extension — even if the URL matches the whitelist.
+        (Badge count will also exclude pinned tabs.)
+      </div>
+    </div>
+
+    <div class="card">
+      <label>
+        <input type="checkbox" id="respectTabGroups">
+        Treat tab groups as separate
+      </label>
+      <div class="hint small">
+        When enabled, duplicates are only closed within the same tab group. Tabs in different groups are treated as different.
+        This also applies in whitelist mode.
+        <br />Note: Chrome does not allow pinned tabs to be grouped.
+      </div>
+    </div>
+
+
+    <div class="card">
+      <label>
+        <input type="checkbox" id="protectUniqueCurrentWindow">
+        Protect unique tabs in the focused window (All windows scope)
+      </label>
+      <div class="hint small">
+        When Duplicate scope is set to <b>All windows</b>: if a URL appears <b>exactly once</b> in the focused window,
+        it will never be closed. Duplicates in other windows will be closed instead.
+      </div>
+    </div>
+
+    <h2>Automation</h2>
+    <hr />
+
+    <div class="card">
+      <label>
+        <input type="checkbox" id="autoCloseEnabled">
+        Auto-close duplicate tabs after a delay
+      </label>
+      <div class="row" style="margin-top:10px;">
+        <span class="small"><strong>Delay:</strong></span>
+        <input type="number" id="autoCloseSeconds" min="1" step="1" placeholder="30">
+        <span class="small">seconds</span>
+      </div>
+      <div class="hint small">
+        When enabled, the extension will automatically close duplicates after the specified delay.
+        The close logic respects all current rules and protections (Pinned / Groups / Whitelist / Blacklist).
+        The timer resets when you switch to a different window or when settings change.
+      </div>
+    </div>
+
+    <div class="card">
+      <label>
+        <input type="checkbox" id="suspendedUrlEnabled">
+        Treat suspended tabs as their original URL (requires extension ID)
+      </label>
+      <div class="hint small">
+        Some suspender extensions replace a tab URL with a wrapper page like
+        <code>chrome-extension://&lt;extId&gt;/suspended.html#...&amp;uri=&lt;originalUrl&gt;</code>.
+        When enabled, this extension will extract the original URL (from <code>uri=</code>/<code>url=</code>) and use it for
+        duplicate detection and rule matching.
+      </div>
+
+      <div class="subhead">Suspender extension IDs (one per line)</div>
+      <textarea id="suspenderExtensionIds" style="height:80px;" placeholder="Example:
+
+noogafoofpebimajpfpamcfhoaifemoa"></textarea>
+
+      <div class="subhead">When both suspended and non-suspended tabs are duplicates</div>
+      <label style="display:block; margin-top:6px;">
+        <input type="radio" name="suspendedCloseMode" value="default" checked>
+        Default behavior (no preference)
+      </label>
+      <label style="display:block; margin-top:6px;">
+        <input type="radio" name="suspendedCloseMode" value="closeSuspended">
+        Prefer closing suspended tabs
+      </label>
+      <label style="display:block; margin-top:6px;">
+        <input type="radio" name="suspendedCloseMode" value="closeNormal">
+        Prefer closing non-suspended tabs
+      </label>
+      <div class="hint small">
+        These options only affect the tie-breaker when candidates are equally pinned/active.
+        Pinned-tab protection and the active tab still take priority.
+      </div>
+    </div>
+
+    <h2>Badge</h2>
+    <hr />
+
+    <div class="card">
+      <div class="row"><strong>Badge text</strong></div>
+      <label style="display:block; margin-top:8px;">
+        <input type="checkbox" id="badgeShowDuplicateCount">
+        Show duplicate count on the badge
+      </label>
+      <div class="hint small">
+        The duplicate count reflects how many tabs would be closed by the current rules.
+        If you enable auto-close, you may prefer to hide this and only show tab counts.
+      </div>
+
+      <label style="display:block; margin-top:10px;">
+        <input type="checkbox" id="badgeShowTabCount">
+        Show tab count on the badge
+      </label>
+      <div class="row" style="margin-top:8px;">
+        <span class="small"><strong>Tab count scope:</strong></span>
+        <label class="small"><input type="radio" name="badgeTabCountScope" value="current" checked> Focused window</label>
+        <label class="small"><input type="radio" name="badgeTabCountScope" value="all"> All windows</label>
+      </div>
+      <div class="hint small">
+        When duplicates exist: the badge shows the duplicate count if enabled; otherwise it shows the tab count.
+        When no duplicates exist: the badge shows the tab count if enabled.
+      </div>
+    </div>
+
+    <div class="card">
+      <label>
+        <input type="checkbox" id="badgeColorsEnabled">
+        Enable custom badge colors
+      </label>
+      <div class="hint small">
+        Customize the badge background and text colors based on what the badge is showing:
+        <strong>Duplicate count mode</strong> vs <strong>Tab count mode</strong>.
+        Use hex colors like <code>#FFA500</code>, <code>FFA500</code>, <code>#FF0000FF</code> (alpha optional).
+      </div>
+
+      <div class="subhead">Duplicate count mode (orange bg + black text by default)</div>
+      <div class="row">
+        <span class="small"><strong>Background:</strong></span>
+        <input type="text" id="badgeDupBg" placeholder="#FFA500">
+        <span class="small"><strong>Text:</strong></span>
+        <input type="text" id="badgeDupText" placeholder="#000000">
+      </div>
+
+      <div class="subhead">Tab count mode (black bg + white text by default)</div>
+      <div class="row">
+        <span class="small"><strong>Background:</strong></span>
+        <input type="text" id="badgeTabBg" placeholder="#000000">
+        <span class="small"><strong>Text:</strong></span>
+        <input type="text" id="badgeTabText" placeholder="#FFFFFF">
+      </div>
+    </div>
+
+    <h2>Rules</h2>
+    <hr />
+
+    <div class="card">
+      <label>
+        <input type="checkbox" id="includeBlankPages">
+        Include blank / new tab pages (<code>about:blank</code>, <code>chrome://newtab</code>, ...)
+      </label>
+      <div class="hint">Default: unchecked — blank/new tabs are ignored (not counted, not closed).</div>
+    </div>
+
+    <div class="card">
+      <div class="row"><strong>Blacklist (default enabled)</strong></div>
+      <div class="hint small">
+        Each line is a case-insensitive <b>pattern</b>.
+        <br />You can use either:
+        <br />• <b>URL fragment (literal)</b>: no escaping needed. Example: <code>youtube.com/watch?v=</code> or <code>tw.yahoo.com</code>
+        <br />• <b>Regex</b> (evaluated first): <code>re:&lt;pattern&gt;</code> / <code>regex:&lt;pattern&gt;</code> / <code>/pattern/flags</code>
+        <br />Examples: <code>re:^https?://(www\.)?youtube\.com/watch\?v=</code>
+        <br />Note: Regex always forces <code>i</code> (case-insensitive). Flags <code>g</code>/<code>y</code> are ignored for stable matching.
+        <br />Matching order: <b>Regex first</b>, then <b>URL fragment</b>.
+      </div>
+
+      <div class="subhead">Exclude duplicates within the same window</div>
+      <textarea id="blacklistSameWindow" placeholder="One rule per line, e.g.
+
+yahoo.
+accounts.google.com"></textarea>
+
+      <div class="subhead">Exclude duplicates across different windows</div>
+      <textarea id="blacklistCrossWindow" placeholder="One rule per line, e.g.
+
+yahoo.
+mail.google.com"></textarea>
+
+      <div class="hint small">
+        Tip: If you put the same rule in both lists, duplicates for that URL will never be closed.
+      </div>
+    </div>
+
+    <div class="card">
+      <label>
+        <input type="checkbox" id="whitelistEnabled">
+        Enable whitelist mode (overrides blacklist)
+      </label>
+      <div class="hint small">
+        When enabled, ONLY URLs matching the whitelist patterns below will be de-duplicated. Everything else is ignored.
+        Blacklist rules are not used in whitelist mode.
+        <br />Whitelist patterns follow the same rule: <b>Regex first</b>, then <b>URL fragment</b>.
+        <br />Priority: <b>Pinned</b> &gt; <b>Group rules</b> &gt; <b>Whitelist</b> &gt; <b>Blacklist</b>.
+        Pinned and Group rules always apply and can prevent closing even in whitelist mode.
+      </div>
+
+      <div class="subhead">Whitelist (include-only)</div>
+      <textarea id="whitelistText" placeholder="One rule per line, e.g.
+
+github.com
+re:^https://docs\.google\.com/"></textarea>
+    </div>
+
+    
+    <div class="card" id="contentEqCard">
+      <div class="subhead">Content equivalence (domain-scoped canonicalization) <span class="small" style="font-weight: normal;">(experimental)</span></div>
+      <div class="hint small"><strong style="color:#c00">DANGER! Proceed with caution!</strong></div>
+
+      <label>
+        <input type="checkbox" id="contentEqEnabled">
+        Enable content equivalence
+      </label>
+
+      <div class="hint small">
+        When enabled, multiple URLs that represent the same underlying content can be treated as duplicates
+        (e.g., YouTube watch URLs with different tracking params).
+        <strong>Content equivalence can also be applied in whitelist mode, unless you disable it below.</strong>
+      </div>
+
+      <div class="row" style="margin-top: 8px;">
+        <label class="small"><input type="checkbox" id="contentEqDisableInWhitelist"> Whitelist mode overrides and disables content equivalence.</label>
+      </div>
+
+      <div class="row" style="margin-top: 8px;">
+        <label class="small"><input type="checkbox" id="contentEqUseAutoRules"> Use auto rules</label>
+        <label class="small"><input type="checkbox" id="contentEqUseManualRules"> Use manual rules</label>
+      </div>
+
+      <div class="subhead">Auto rules</div>
+      <textarea id="contentEqAutoRuleList" placeholder="One rule per line.
+
+Format:
+<host> => <extractorRegex>
+
+Extended (optional):
+<host> => <extractorRegex> => <canonicalTarget>
+<host> => <extractorRegex1> <=> <extractorRegex2> => <canonicalTarget>
+
+Notes:
+- <canonicalTarget> can be a hostname (e.g. www.google.com) or a full URL.
+- You may use $1 in <canonicalTarget> to substitute the first capture group.
+
+Examples:
+youtube.com, youtu.be => re:(?:[?&]v=|/(?:shorts|embed|live|v)/|youtu\.be/)([A-Za-z0-9_-]{6,})
+www.google.com => re:[?&]hl=([^&]+) => https://www.google.com/?hl=$1
+"></textarea>
+
+      <div class="subhead">Manual rules</div>
+      <textarea id="contentEqManualRuleList" placeholder="Same format as Auto rules (including the optional canonicalTarget). Manual rules have higher priority."></textarea>
+
+      <div class="hint small">
+        <div><strong>Rule format:</strong> <code>&lt;host&gt; =&gt; &lt;extractorRegex&gt;</code></div>
+        <div><strong>&lt;host&gt;</strong>: one or more host specs separated by commas, e.g. <code>youtube.com, youtu.be</code> (domain suffixes) or an explicit regex (<code>re:(^|\.)youtube\.com$</code>).</div>
+        <div><strong>&lt;extractorRegex&gt;</strong>: must be an explicit regex using <code>re:</code>, <code>regex:</code>, or <code>/.../flags</code>. The first capture group (if present) becomes the key.</div>
+        <div><strong>Precedence:</strong> manual → auto.</div>
+        <div style="margin-top:6px;"><strong>Extended syntax:</strong> <code>&lt;extractorRegex1&gt; &lt;=&gt; &lt;extractorRegex2&gt; =&gt; &lt;canonicalTarget&gt;</code></div>
+        <div>The <code>&lt;=&gt;</code> operator means the extractor regexes are equivalent alternatives.</div>
+        <div>If <code>&lt;canonicalTarget&gt;</code> is provided, the extension will <em>prefer keeping</em> the tab whose URL already matches the canonical target.</div>
+        <div>If <code>&lt;canonicalTarget&gt;</code> is omitted (or empty), no redirection preference is applied.</div>
+
+      </div>
+
+      <div class="subhead">Infer from samples</div>
+      <textarea id="contentEqSamples" placeholder="Paste multiple URL variants for the SAME content, one per line.
+Then click Infer to add a rule into Auto rules."></textarea>
+      <div class="row" style="margin-top: 8px;">
+        <button id="contentEqInferBtn" type="button">Infer → Add to Auto rules</button>
+        <span id="contentEqInferStatus" class="small"></span>
+      </div>
+    </div>
+
+<button id="save" type="button">Save</button>
+    <span id="status"></span>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
