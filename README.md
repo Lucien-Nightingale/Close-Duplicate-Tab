@@ -1,4 +1,4 @@
-# Close Duplicate Tab
+# Close Duplicate Ta
 
 A Chrome extension that automatically identifies and closes duplicate browser tabs with identical URLs, helping reduce browser memory usage and tab clutter.
 
